@@ -29,7 +29,21 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
 
+    const plantsCollection = client.db('plantsDB').collection('plants')
 
+    app.post('/plants', async (req,res) => {
+        const newPlants = req.body;
+        const result = await plantsCollection.insertOne(newPlants);
+        res.send(result)
+        console.log(newPlants);
+    })
+
+
+
+
+
+
+      await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
   
