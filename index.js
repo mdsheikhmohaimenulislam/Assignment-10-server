@@ -33,7 +33,17 @@ async function run() {
 
     // Get data on mongodb to display data
     app.get('/plants', async (req,res) => {
-        const cursor = plantsCollection.find();
+        // Search
+        const {searchParams} = req.query;
+        
+        let query = {}
+        if(searchParams){
+            query = {
+                name:{$regex: searchParams,$options:"i"}
+            }
+        }
+
+        const cursor = plantsCollection.find(query);
         const result = await cursor.toArray();
         res.send(result);
     })
