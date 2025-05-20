@@ -31,6 +31,15 @@ async function run() {
 
     const plantsCollection = client.db('plantsDB').collection('plants')
 
+    // Get data on mongodb to display data
+    app.get('/plants', async (req,res) => {
+        const cursor = plantsCollection.find();
+        const result = await cursor.toArray();
+        res.send(result);
+    })
+
+
+    // Add plants data on mongodb database
     app.post('/plants', async (req,res) => {
         const newPlants = req.body;
         const result = await plantsCollection.insertOne(newPlants);
