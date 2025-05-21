@@ -40,10 +40,6 @@ async function run() {
       res.send(result);
     });
 
-
-
-
-
     // singleDetails section
     const { ObjectId } = require("mongodb");
     app.get("/plants/:id", async (req, res) => {
@@ -73,25 +69,39 @@ async function run() {
     });
 
     // Update Plants
-    app.put("/plants/:id", async (req,res) => {
-        const id = req.params.id
-        const filter = {_id: new ObjectId(id)}
-       const options = { upsert: true };
-       const updatePlants = req.body
-       const updateDoc = {
-        $set:updatePlants
-       }
-       const result = await plantsCollection.updateOne(filter,updateDoc,options)
-       res.send(result)
-    })
+    app.put("/plants/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updatePlants = req.body;
+      const updateDoc = {
+        $set: updatePlants,
+      };
+      const result = await plantsCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.send(result);
+    });
+
+    // New Plants Sort section
+    app.get("/new-plants", async (req, res) => {
+      const result = await plantsCollection
+        .find({})
+        .sort({ _id: -1 })
+        .limit(6)
+        .toArray();
+      res.send(result);
+    });
 
     // Deleted section
-    app.delete("/plants/:id", async (req,res) => {
-        const id = req.params.id
-        const query = {_id: new ObjectId(id)}
-        const result = plantsCollection.deleteOne(query)
-        res.send(result)
-    })
+    app.delete("/plants/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = plantsCollection.deleteOne(query);
+      res.send(result);
+    });
 
     await client.db("admin").command({ ping: 1 });
     console.log(
