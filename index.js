@@ -35,7 +35,6 @@ async function run() {
     app.get('/plants', async (req,res) => {
         // Search
         const {searchParams} = req.query;
-        
         let query = {}
         if(searchParams){
             query = {
@@ -47,6 +46,28 @@ async function run() {
         const result = await cursor.toArray();
         res.send(result);
     })
+
+
+
+const { ObjectId } = require('mongodb');
+app.get("/plants/:id", async (req, res) => {
+  const id = req.params.id;
+
+  try {
+    const objectId = new ObjectId(id);
+    const plant = await plantsCollection.findOne({ _id: objectId });
+
+    if (!plant) {
+      return res.status(404).send({ message: "Plant not found" });
+    }
+
+    res.send(plant);
+  } catch (error) {
+    // Invalid ObjectId format
+    return res.status(400).send({ message: "Invalid ID format" });
+  }
+});
+
 
 
     // Add plants data on mongodb database
