@@ -72,6 +72,19 @@ async function run() {
       console.log(newPlants);
     });
 
+    // Update Plants
+    app.put("/plants/:id", async (req,res) => {
+        const id = req.params.id
+        const filter = {_id: new ObjectId(id)}
+       const options = { upsert: true };
+       const updatePlants = req.body
+       const updateDoc = {
+        $set:updatePlants
+       }
+       const result = await plantsCollection.updateOne(filter,updateDoc,options)
+       res.send(result)
+    })
+
     // Deleted section
     app.delete("/plants/:id", async (req,res) => {
         const id = req.params.id
