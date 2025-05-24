@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 require("dotenv").config();
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const port = process.env.PORT || 5000;
 
 // Middleware
@@ -24,24 +24,28 @@ async function run() {
   try {
     const plantsCollection = client.db("plantsDB").collection("plants");
 
+//     const date = new Date("2020-02-05T00:00:00.000Z");
+// console.log(date.toLocaleDateString("en-GB"));
+
     // Get data on mongodb to display data
+    // All Plants
     app.get("/plants", async (req, res) => {
-      // Search
       const { searchParams } = req.query;
       let query = {};
+      // Search
       if (searchParams) {
         query = {
           name: { $regex: searchParams, $options: "i" },
         };
       }
 
-      const cursor = plantsCollection.find(query);
+      const cursor = plantsCollection.find(query).sort({ NextWateringDate: 1 });
       const result = await cursor.toArray();
+
       res.send(result);
     });
 
     // singleDetails section
-    const { ObjectId } = require("mongodb");
     app.get("/plants/:id", async (req, res) => {
       const id = req.params.id;
 
@@ -63,6 +67,9 @@ async function run() {
     // Add plants data on mongodb database
     app.post("/plants", async (req, res) => {
       const newPlants = req.body;
+      const nextDate = new Date(newPlants.NextWateringDate);
+      newPlants.NextWateringDate = nextDate
+      console.log(newPlants);
       const result = await plantsCollection.insertOne(newPlants);
       res.send(result);
       console.log(newPlants);
@@ -103,7 +110,7 @@ async function run() {
       res.send(result);
     });
 
-    await client.db("admin").command({ ping: 1 });
+    await client.db("admin").command({ ping: -1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
