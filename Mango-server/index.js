@@ -97,7 +97,7 @@ async function run() {
       const result = await plantsCollection
         .find({})
         .sort({ _id: -1 })
-        .limit(6)
+        .limit(9)
         .toArray();
       res.send(result);
     });
@@ -120,7 +120,7 @@ async function run() {
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-  res.send("simply GreenNest Server running");
+  res.send("simply GreenNest Server running on");
 });
 
 app.listen(port, () => {
