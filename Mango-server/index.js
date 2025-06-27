@@ -23,25 +23,40 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     const plantsCollection = client.db("plantsDB").collection("plants");
+    const messagesCollection = client.db("plantsDB").collection("messages");
 
-//     const date = new Date("2020-02-05T00:00:00.000Z");
-// console.log(date.toLocaleDateString("en-GB"));
-
-    // Get data on mongodb to display data
-    // All Plants
+    // search params or sort all data get
     app.get("/plants", async (req, res) => {
-      const { searchParams } = req.query;
-      let query = {};
-      // Search
-      if (searchParams) {
-        query = {
-          name: { $regex: searchParams, $options: "i" },
-        };
-      }
+      const search = req.query.searchParams || "";
+      const sortOrder = req.query.sort || "asc";
 
-      const cursor = plantsCollection.find(query).sort({ NextWateringDate: 1 });
-      const result = await cursor.toArray();
+      const filter = {
+        name: { $regex: search, $options: "i" },
+      };
 
+      const sortOption = { NextWateringDate: sortOrder === "asc" ? 1 : -1 };
+
+      const result = await plantsCollection
+        .find(filter)
+        .sort(sortOption)
+        .toArray();
+
+      console.log("Search:", search);
+      console.log("Sort order:", sortOrder);
+      console.log("Sort option:", sortOption);
+      res.send(result);
+    });
+
+    // Add plants data to MongoDB
+    app.post("/plants", async (req, res) => {
+      const newPlant = req.body;
+
+      // Convert NextWateringDate from string to Date object
+      newPlant.NextWateringDate = new Date(newPlant.NextWateringDate);
+
+      console.log("New plant received:", newPlant);
+
+      const result = await plantsCollection.insertOne(newPlant);
       res.send(result);
     });
 
@@ -62,17 +77,6 @@ async function run() {
         // Invalid ObjectId format
         return res.status(400).send({ message: "Invalid ID format" });
       }
-    });
-
-    // Add plants data on mongodb database
-    app.post("/plants", async (req, res) => {
-      const newPlants = req.body;
-      const nextDate = new Date(newPlants.NextWateringDate);
-      newPlants.NextWateringDate = nextDate
-      console.log(newPlants);
-      const result = await plantsCollection.insertOne(newPlants);
-      res.send(result);
-      console.log(newPlants);
     });
 
     // Update Plants
@@ -97,8 +101,18 @@ async function run() {
       const result = await plantsCollection
         .find({})
         .sort({ _id: -1 })
-        .limit(9)
+        .limit(8)
         .toArray();
+      res.send(result);
+    });
+
+    app.post("/messages", async (req, res) => {
+      const result = await messagesCollection.insertOne(req.body);
+      res.send(result);
+    });
+
+    app.get("/messages", async (req, res) => {
+      const result = await messagesCollection.find().toArray();
       res.send(result);
     });
 
